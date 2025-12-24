@@ -1,0 +1,23 @@
+.my-message-view {
+    -fx-background-color: orange;
+}
+.user-message-view {
+    -fx-background-color: gray;
+}
+.system-message-view {
+    -fx-background-color: white;
+}
+
+.user-card {
+    -fx-background-color: black;
+}
+
+.user-name-label {
+    -fx-font-size: 2em;
+    -fx-font-family: "Arial";
+}
+.user-id-label {
+    -fx-text-fill: orange;
+    -fx-font-family: "Arial";
+    -fx-border-width: 0;
+}
