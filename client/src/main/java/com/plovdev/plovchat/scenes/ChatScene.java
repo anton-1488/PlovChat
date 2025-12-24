@@ -124,7 +124,7 @@ public class ChatScene extends BaseScene {
             @Override
             public void onMessageReceived(Message message) {
                 if (messageList != null) {
-                    messageList.addMessage(message);
+                    Platform.runLater(() -> messageList.addMessage(message));
                 }
             }
 

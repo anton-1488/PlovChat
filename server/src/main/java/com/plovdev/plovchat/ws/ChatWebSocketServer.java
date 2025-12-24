@@ -157,8 +157,9 @@ public class ChatWebSocketServer extends WebSocketServer {
 
         JSONObject messageArgs = new JSONObject();
         messageArgs.put("id", System.currentTimeMillis());
-        messageArgs.put("text", text);
-        messageArgs.put("time", System.currentTimeMillis());
+        messageArgs.put("content", text);
+        messageArgs.put("timestamp", System.currentTimeMillis());
+        messageArgs.put("type", "TEXT");
         messageArgs.put("chatId", senderId); // Отправляем обратно senderId как chatId
 
         // Добавляем данные отправителя
@@ -166,10 +167,12 @@ public class ChatWebSocketServer extends WebSocketServer {
         from.put("id", senderId);
         from.put("userName", sender.getName());
         from.put("bio", sender.getBio());
-        from.put("pictureUrl", sender.getAvatar());
+        from.put("picture-url", sender.getAvatar());
         messageArgs.put("from", from);
 
         messageToSend.put("args", messageArgs);
+
+        System.out.println(messageToSend);
 
         // Отправляем получателю, если он онлайн
         WebSocket recipientSocket = userConnections.get(recipientId);
@@ -178,26 +181,19 @@ public class ChatWebSocketServer extends WebSocketServer {
             log.info("Сообщение от {} к {}: {}", senderId, recipientId, text);
         } else {
             log.info("Получатель {} офлайн. Сообщение сохранено.", recipientId);
-            Optional<ChatEntity> chat = chatRepository.findById(Long.parseLong(senderId));
-            if (chat.isPresent()) {
-                MessageEntity entity = new MessageEntity();
-                entity.setChat(chat.get());
-                entity.setType(MessageEntity.MessageType.TEXT);
-                entity.setSender(sender);
-                entity.setCreatedAt(LocalDateTime.now());
-                entity.setContent(text);
-
-                messageRepos.save(entity);
-            }
         }
 
-        // Отправляем подтверждение отправителю
-        JSONObject confirmation = new JSONObject();
-        confirmation.put("op", "message_sent");
-        confirmation.put("args", new JSONObject()
-                .put("success", true)
-                .put("to", recipientId));
-        conn.send(confirmation.toString());
+        Optional<ChatEntity> chat = chatRepository.findById(Long.parseLong(senderId));
+        if (chat.isPresent()) {
+            MessageEntity entity = new MessageEntity();
+            entity.setChat(chat.get());
+            entity.setType(MessageEntity.MessageType.TEXT);
+            entity.setSender(sender);
+            entity.setCreatedAt(LocalDateTime.now());
+            entity.setContent(text);
+
+            messageRepos.save(entity);
+        }
     }
 
     private void handleStatus(WebSocket conn, JSONObject json) {
