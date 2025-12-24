@@ -84,7 +84,8 @@ public class WSManager extends WebSocketClient {
                     checkLogin(message);
                     break;
                 case "message":
-                    handleMessage(s);
+                    JSONObject msg = message.getJSONObject("args");
+                    handleMessage(msg.toString());
                     break;
                 case "status":
                     handleStatus(message);
