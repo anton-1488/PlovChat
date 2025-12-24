@@ -17,14 +17,12 @@ public class PlovChatApp extends Application {
     public void start(Stage stage) {
         BaseScene baseScene;
 
-        prefs.putBoolean("is-user-registred", true);
+        //prefs.putBoolean("is-user-registred", false);
         if (!prefs.getBoolean("is-user-registred", false)) {
             baseScene = new LoginScene(stage);
         } else {
             baseScene = new ChatScene(stage);
         }
-
-        baseScene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm());
 
         stage.setScene(baseScene);
         stage.setTitle("PlovChat");

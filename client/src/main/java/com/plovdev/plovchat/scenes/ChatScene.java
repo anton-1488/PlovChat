@@ -22,6 +22,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.prefs.Preferences;
 
@@ -36,6 +37,7 @@ public class ChatScene extends BaseScene {
 
     public ChatScene(Stage stage) {
         super(new Pane(), 1000, 600, stage);
+        getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm());
         initListener(null);
         String id = prefs.get("user-id", "");
         String name = prefs.get("user-name", "");
