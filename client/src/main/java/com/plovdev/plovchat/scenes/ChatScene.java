@@ -41,6 +41,7 @@ public class ChatScene extends BaseScene {
         initListener(null);
         String id = prefs.get("user-id", "");
         String name = prefs.get("user-name", "");
+        String passw = prefs.get("user-password", "");
 
         setRoot(mainPane);
         loadChats(list);
