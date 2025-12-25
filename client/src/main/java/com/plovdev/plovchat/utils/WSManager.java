@@ -3,7 +3,6 @@ package com.plovdev.plovchat.utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.plovdev.plovchat.PlovChatApp;
 import com.plovdev.plovchat.models.Message;
 import com.plovdev.plovchat.models.User;
 import com.plovdev.plovchat.models.utils.JsonParser;
@@ -14,11 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.prefs.Preferences;
 
 public class WSManager extends WebSocketClient {
-    private static final Preferences prefs = Preferences.userNodeForPackage(PlovChatApp.class);
-
     private final Logger log = LoggerFactory.getLogger(WSManager.class);
     private boolean isReconnecting = false;
     private boolean isConnected = false;
@@ -31,7 +27,7 @@ public class WSManager extends WebSocketClient {
     private Runnable onReady = () -> {};
 
     private WSManager() {
-        super(URI.create("ws://217.26.27.252:8081/chat"));
+        super(URI.create("ws://localhost:8081/chat"));
         setConnectionLostTimeout(50);
 
         connect();
@@ -77,6 +73,7 @@ public class WSManager extends WebSocketClient {
     @Override
     public void onMessage(String s) {
         try {
+            System.out.println(s);
             JSONObject message = new JSONObject(s);
             String op = message.optString("op");
             switch (op) {
@@ -159,8 +156,8 @@ public class WSManager extends WebSocketClient {
 
     private void auntificate() {
         try {
-            String id = prefs.get("user-id", null);
-            String password = prefs.get("user-password", null);
+            String id = Utils.getFromPrefs("user-id", null);
+            String password = Utils.getFromPrefs("user-password", null);
 
             if (id == null || password == null) {
                 return;
@@ -196,10 +193,10 @@ public class WSManager extends WebSocketClient {
         // Добавь информацию об отправителе если нужно
         JsonObject from = new JsonObject();
 
-        from.addProperty("id", prefs.get("user-id", ""));
-        from.addProperty("name", prefs.get("user-name", ""));
-        from.addProperty("bio", prefs.get("user-bio", ""));
-        from.addProperty("picture-url", prefs.get("picture-url", ""));
+        from.addProperty("id", Utils.getFromPrefs("user-id", ""));
+        from.addProperty("name", Utils.getFromPrefs("user-name", ""));
+        from.addProperty("bio", Utils.getFromPrefs("user-bio", ""));
+        from.addProperty("picture-url", Utils.getFromPrefs("picture-url", ""));
 
         args.add("from", from);
 

@@ -1,6 +1,5 @@
 package com.plovdev.plovchat.scenes;
 
-import com.plovdev.plovchat.PlovChatApp;
 import com.plovdev.plovchat.models.Chat;
 import com.plovdev.plovchat.models.Message;
 import com.plovdev.plovchat.models.User;
@@ -11,10 +10,8 @@ import com.plovdev.plovchat.utils.Utils;
 import com.plovdev.plovchat.utils.WSManager;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.scene.control.Button;
-import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextInputDialog;
+import javafx.geometry.Pos;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -24,11 +21,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.prefs.Preferences;
 
 public class ChatScene extends BaseScene {
-    private static final Preferences prefs = Preferences.userNodeForPackage(PlovChatApp.class);
-
     private static final Logger log = LoggerFactory.getLogger(ChatScene.class);
     private final BorderPane mainPane = new BorderPane();
     private final WSManager manager = WSManager.getInstance();
@@ -39,9 +33,9 @@ public class ChatScene extends BaseScene {
         super(new Pane(), 1000, 600, stage);
         getStylesheets().add(Objects.requireNonNull(getClass().getResource("/style.css")).toExternalForm());
         initListener(null);
-        String id = prefs.get("user-id", "");
-        String name = prefs.get("user-name", "");
-        String passw = prefs.get("user-password", "");
+        String id = Utils.getFromPrefs("user-id", "");
+        String name = Utils.getFromPrefs("user-name", "");
+        String passw = Utils.getFromPrefs("user-password", "");
 
         setRoot(mainPane);
         loadChats(list);
@@ -61,18 +55,25 @@ public class ChatScene extends BaseScene {
         manager.setOnReady(() -> manager.setOnline(true));
 
         list.getSelectionModel().selectedItemProperty().addListener((p1, p2, p3) -> {
+            StackPane base = new StackPane();
+
             Chat chat = ((ChatCardView) p3).getChat();
             MessageList messageList = new MessageList();
             messageList.addAllMessages(loadViews(chat));
             messageList.prefHeightProperty().bind(heightProperty());
-            mainPane.setCenter(messageList);
             initListener(messageList);
 
             SendField sendField = new SendField(chat, messageList);
-            mainPane.setBottom(sendField);
+
+            StackPane.setAlignment(sendField, Pos.BOTTOM_RIGHT);
+            base.getChildren().addAll(messageList, sendField);
+            mainPane.setCenter(base);
         });
 
         mainPane.setLeft(list);
+
+
+        mainPane.getStyleClass().add("chat-scene");
 
         Region space = new Region();
         HBox.setHgrow(space, Priority.ALWAYS);
@@ -81,8 +82,9 @@ public class ChatScene extends BaseScene {
     }
 
     private void loadChats(ChatsList list) {
-        String id = prefs.get("user-id", null);
-        String password = prefs.get("user-password", null);
+        VBox.setVgrow(list, Priority.ALWAYS);
+        String id = Utils.getFromPrefs("user-id", null);
+        String password = Utils.getFromPrefs("user-password", null);
 
         if (id != null && password != null) {
             RestManager.getInstance().getChats(id, password).forEach(chat -> list.addChat(new ChatCardView(chat)));
@@ -108,8 +110,8 @@ public class ChatScene extends BaseScene {
     }
 
     private List<MessageView> loadViews(Chat chat) {
-        String id = prefs.get("user-id", null);
-        String password = prefs.get("user-password", null);
+        String id = Utils.getFromPrefs("user-id", null);
+        String password = Utils.getFromPrefs("user-password", null);
 
         List<MessageView> views = new ArrayList<>();
 

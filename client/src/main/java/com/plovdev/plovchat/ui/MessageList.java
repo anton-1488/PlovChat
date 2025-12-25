@@ -13,8 +13,10 @@ public class MessageList extends ScrollPane {
     public MessageList() {
         box.setPadding(new Insets(10, 10, 50, 10));
         box.setAlignment(Pos.TOP_LEFT);
-
+        getStyleClass().add("chat-scene");
+        box.getStyleClass().add("chat-scene");
         setContent(box);
+
         setFitToHeight(true);
         setFitToWidth(true);
     }

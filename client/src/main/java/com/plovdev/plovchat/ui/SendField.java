@@ -1,19 +1,15 @@
 package com.plovdev.plovchat.ui;
 
-import com.plovdev.plovchat.PlovChatApp;
 import com.plovdev.plovchat.models.Chat;
 import com.plovdev.plovchat.models.Message;
 import com.plovdev.plovchat.models.User;
+import com.plovdev.plovchat.utils.Utils;
 import com.plovdev.plovchat.utils.WSManager;
+import javafx.geometry.Pos;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-
-import java.util.prefs.Preferences;
 
 public class SendField extends HBox {
-    private static final Preferences prefs = Preferences.userNodeForPackage(PlovChatApp.class);
-
     private final TextField textField = new TextField();
     private final WSManager manager = WSManager.getInstance();
 
@@ -21,10 +17,12 @@ public class SendField extends HBox {
     public SendField(Chat curentChat, MessageList messageList) {
         super(0);
         textField.setPromptText("Введите текст...");
+        textField.setPrefHeight(35);
+        textField.getStyleClass().add("prompt-field");
 
         WSManager manager = WSManager.getInstance();
-
-        HBox.setHgrow(textField, Priority.SOMETIMES);
+        textField.prefWidthProperty().bind(messageList.widthProperty());
+        setAlignment(Pos.BOTTOM_RIGHT);
         getChildren().addAll(textField);
 
         textField.setOnAction(a -> {
@@ -45,10 +43,10 @@ public class SendField extends HBox {
         message.setType(Message.MessageType.TEXT);
         message.setTimesamp(System.currentTimeMillis());
         User from = new User();
-        from.setId(prefs.get("user-id", ""));
-        from.setName(prefs.get("user-name", ""));
-        from.setAvatar(prefs.get("user-avatar", ""));
-        from.setBio(prefs.get("user-bio", ""));
+        from.setId(Utils.getFromPrefs("user-id", ""));
+        from.setName(Utils.getFromPrefs("user-name", ""));
+        from.setAvatar(Utils.getFromPrefs("user-avatar", ""));
+        from.setBio(Utils.getFromPrefs("user-bio", ""));
 
         message.setFrom(from);
 

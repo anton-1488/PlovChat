@@ -1,8 +1,10 @@
 package com.plovdev.plovchat.ws;
 
 import com.plovdev.plovchat.entities.ChatEntity;
+import com.plovdev.plovchat.entities.ChatMember;
 import com.plovdev.plovchat.entities.MessageEntity;
 import com.plovdev.plovchat.entities.UserEntity;
+import com.plovdev.plovchat.repos.ChatMemberRepository;
 import com.plovdev.plovchat.repos.ChatRepository;
 import com.plovdev.plovchat.repos.MessageRepos;
 import com.plovdev.plovchat.repos.UsersRepository;
@@ -12,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
 import org.java_websocket.server.WebSocketServer;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.net.InetSocketAddress;
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -33,6 +37,7 @@ public class ChatWebSocketServer extends WebSocketServer {
     private UsersRepository usersRepository;
     private MessageRepos messageRepos;
     private ChatRepository chatRepository;
+    private ChatMemberRepository chatMemberRepository;
 
     // Хранилище подключений: userId -> WebSocket
     private final Map<String, WebSocket> userConnections = new HashMap<>();
@@ -42,10 +47,11 @@ public class ChatWebSocketServer extends WebSocketServer {
 
     public void setRepositories(UsersRepository usersRepository,
                                 MessageRepos messageRepos,
-                                ChatRepository chatRepository) {
+                                ChatRepository chatRepository, ChatMemberRepository memberRepository) {
         this.usersRepository = usersRepository;
         this.messageRepos = messageRepos;
         this.chatRepository = chatRepository;
+        chatMemberRepository = memberRepository;
     }
 
     public ChatWebSocketServer(int port) {
@@ -101,8 +107,9 @@ public class ChatWebSocketServer extends WebSocketServer {
 
     private void handleLogin(WebSocket conn, JSONObject json) {
         try {
-            String userId = json.getJSONArray("args").getJSONObject(0).getString("id");
-            String userPassword = json.getJSONArray("args").getJSONObject(0).getString("password");
+            JSONArray array = json.getJSONArray("args");
+            String userId = array.getJSONObject(0).getString("id");
+            String userPassword = array.getJSONObject(0).getString("password");
 
             // Проверяем пользователя в БД
             UserEntity user = usersRepository.findByIdAndPassword(Long.parseLong(userId), userPassword);
@@ -139,9 +146,15 @@ public class ChatWebSocketServer extends WebSocketServer {
         }
 
         JSONObject args = json.getJSONObject("args");
-        String text = args.getString("text");
-        String recipientId = args.getString("chatId"); // В 1 на 1 chatId = ID получателя
 
+        String text = args.getString("text");
+        String chatId = args.getString("chatId");
+
+        Optional<ChatEntity> chatEntityOptional = chatRepository.findById(Long.parseLong(chatId));
+        if (chatEntityOptional.isEmpty()) {
+            log.warn("Chat not found");
+            return;
+        }
         // Получаем данные отправителя из БД
         Optional<UserEntity> senderOpt = usersRepository.findById(Long.parseLong(senderId));
         if (senderOpt.isEmpty()) {
@@ -151,7 +164,35 @@ public class ChatWebSocketServer extends WebSocketServer {
         }
         UserEntity sender = senderOpt.get();
 
-        // Подготавливаем сообщение для отправки
+        ChatEntity chatEntity = chatEntityOptional.get();
+
+        List<ChatMember> toMembers = chatMemberRepository.findByChatId(chatEntity.getId()).stream().filter(chatMember -> !chatMember.getUser().getId().equals(sender.getId())).toList();
+
+        for (ChatMember member : toMembers) {
+            // Отправляем получателю, если он онлайн
+            String recipientId = String.valueOf(member.getUser().getId().longValue());
+
+            WebSocket recipientSocket = userConnections.get(recipientId);
+            if (recipientSocket != null && recipientSocket.isOpen()) {
+                recipientSocket.send(getMessageToSend(text, sender, member.getChat().getId()).toString());
+                log.info("Сообщение от {} к {}: {}", senderId, recipientId, text);
+            } else {
+                log.info("Получатель {} офлайн. Сообщение сохранено.", recipientId);
+            }
+
+            MessageEntity entity = new MessageEntity();
+            entity.setChat(member.getChat());
+            entity.setType(MessageEntity.MessageType.TEXT);
+            entity.setSender(sender);
+            entity.setCreatedAt(LocalDateTime.now());
+            entity.setContent(text);
+
+            messageRepos.save(entity);
+        }
+    }
+
+    private JSONObject getMessageToSend(String text, UserEntity sender, Long chatId) {
+
         JSONObject messageToSend = new JSONObject();
         messageToSend.put("op", "message");
 
@@ -160,11 +201,11 @@ public class ChatWebSocketServer extends WebSocketServer {
         messageArgs.put("content", text);
         messageArgs.put("timestamp", System.currentTimeMillis());
         messageArgs.put("type", "TEXT");
-        messageArgs.put("chatId", senderId); // Отправляем обратно senderId как chatId
+        messageArgs.put("chatId", chatId);
 
         // Добавляем данные отправителя
         JSONObject from = new JSONObject();
-        from.put("id", senderId);
+        from.put("id", sender.getId());
         from.put("userName", sender.getName());
         from.put("bio", sender.getBio());
         from.put("picture-url", sender.getAvatar());
@@ -173,27 +214,7 @@ public class ChatWebSocketServer extends WebSocketServer {
         messageToSend.put("args", messageArgs);
 
         System.out.println(messageToSend);
-
-        // Отправляем получателю, если он онлайн
-        WebSocket recipientSocket = userConnections.get(recipientId);
-        if (recipientSocket != null && recipientSocket.isOpen()) {
-            recipientSocket.send(messageToSend.toString());
-            log.info("Сообщение от {} к {}: {}", senderId, recipientId, text);
-        } else {
-            log.info("Получатель {} офлайн. Сообщение сохранено.", recipientId);
-        }
-
-        Optional<ChatEntity> chat = chatRepository.findById(Long.parseLong(senderId));
-        if (chat.isPresent()) {
-            MessageEntity entity = new MessageEntity();
-            entity.setChat(chat.get());
-            entity.setType(MessageEntity.MessageType.TEXT);
-            entity.setSender(sender);
-            entity.setCreatedAt(LocalDateTime.now());
-            entity.setContent(text);
-
-            messageRepos.save(entity);
-        }
+        return messageToSend;
     }
 
     private void handleStatus(WebSocket conn, JSONObject json) {

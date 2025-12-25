@@ -4,26 +4,23 @@ import com.plovdev.plovchat.scenes.BaseScene;
 import com.plovdev.plovchat.scenes.ChatScene;
 import com.plovdev.plovchat.scenes.LoginScene;
 import com.plovdev.plovchat.utils.RestManager;
+import com.plovdev.plovchat.utils.Utils;
 import com.plovdev.plovchat.utils.WSManager;
 import javafx.application.Application;
 import javafx.stage.Stage;
 
-import java.util.prefs.Preferences;
-
 public class PlovChatApp extends Application {
-    private static final Preferences prefs = Preferences.userNodeForPackage(PlovChatApp.class);
-
     @Override
     public void start(Stage stage) {
         BaseScene baseScene;
 
         //prefs.putBoolean("is-user-registred", false);
-        if (!prefs.getBoolean("is-user-registred", false)) {
+        if (!Utils.getBoolean("is-user-registred", false)) {
             baseScene = new LoginScene(stage);
         } else {
-            String id = prefs.get("user-id", "");
-            String name = prefs.get("user-name", "");
-            String passw = prefs.get("user-password", "");
+            String id = Utils.getFromPrefs("user-id", "");
+            String name = Utils.getFromPrefs("user-name", "");
+            String passw = Utils.getFromPrefs("user-password", "");
 
             if (RestManager.getInstance().checkUser(id, passw)) {
                 baseScene = new ChatScene(stage);

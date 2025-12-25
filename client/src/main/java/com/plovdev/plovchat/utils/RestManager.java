@@ -2,7 +2,6 @@ package com.plovdev.plovchat.utils;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
-import com.plovdev.plovchat.PlovChatApp;
 import com.plovdev.plovchat.models.Chat;
 import com.plovdev.plovchat.models.Message;
 import com.plovdev.plovchat.models.User;
@@ -22,13 +21,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.prefs.Preferences;
 
 public class RestManager {
     private static final Logger log = LoggerFactory.getLogger(RestManager.class);
-    private static final Preferences prefs = Preferences.userNodeForPackage(PlovChatApp.class);
     private static RestManager INSTANCE;
-    private static final String BASE_URL = "http://217.26.27.252:8080/api/"; //http://217.26.27.252:8080/api/
+    private static final String BASE_URL = "http://localhost:8080/api/"; //http://217.26.27.252:8080/api/
     private final HttpClient client;
 
     private final Gson gson = new Gson();
@@ -122,8 +119,8 @@ public class RestManager {
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .header("User-Agent", "PlovChat/1.0")
-                    .header("User-Id", prefs.get("user-id", ""))
-                    .header("User-Password", prefs.get("user-password", ""))
+                    .header("User-Id", Utils.getFromPrefs("user-id", ""))
+                    .header("User-Password", Utils.getFromPrefs("user-password", ""))
                     .timeout(Duration.ofSeconds(20))
                     .build();
 
@@ -216,8 +213,8 @@ public class RestManager {
                     .header("Content-Type", "application/json")
                     .header("Accept", "application/json")
                     .header("User-Agent", "PlovChat/1.0")
-                    .header("User-Id", prefs.get("user-id", ""))
-                    .header("User-Password", prefs.get("user-password", ""))
+                    .header("User-Id", Utils.getFromPrefs("user-id", ""))
+                    .header("User-Password", Utils.getFromPrefs("user-password", ""))
                     .header("Chat-Id", chatId)
                     .timeout(Duration.ofSeconds(20))
                     .build();

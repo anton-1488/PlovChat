@@ -1,6 +1,5 @@
 package com.plovdev.plovchat.scenes.panes;
 
-import com.plovdev.plovchat.PlovChatApp;
 import com.plovdev.plovchat.scenes.ChatScene;
 import com.plovdev.plovchat.utils.RestManager;
 import com.plovdev.plovchat.utils.Utils;
@@ -13,10 +12,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-import java.util.prefs.Preferences;
-
 public class LoginTab extends StackPane {
-    private static final Preferences prefs = Preferences.userNodeForPackage(PlovChatApp.class);
     private final Stage root;
 
     private final VBox content = new VBox(20);
@@ -61,9 +57,9 @@ public class LoginTab extends StackPane {
         if (Utils.validatePassword(password)) {
             boolean isSuccess = RestManager.getInstance().checkUser(idStr, password);
             if (isSuccess) {
-                prefs.put("user-id", idStr);
-                prefs.put("user-password", password);
-                prefs.putBoolean("is-user-registred", true);
+                Utils.putToPrefs("user-id", idStr);
+                Utils.putToPrefs("user-password", password);
+                Utils.putBoolean("is-user-registred", true);
 
                 root.setScene(new ChatScene(root));
             }

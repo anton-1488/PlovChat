@@ -7,6 +7,22 @@
 .system-message-view {
     -fx-background-color: white;
 }
+.message-view {
+    -fx-padding: 10px;
+    -fx-background-radius: 20px;
+}
+
+.chat-scene {
+    -fx-background-color: rgb(15,15,15);
+}
+.chat-scene-trans {
+    -fx-background-color: transparent;
+}
+
+.prompt-field {
+    -fx-font-family: "Arial";
+    -fx-font-size: 1.5em;
+}
 
 .user-card {
     -fx-background-color: black;

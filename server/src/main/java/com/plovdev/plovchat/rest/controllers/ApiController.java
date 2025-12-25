@@ -20,7 +20,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.ZoneOffset;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -90,7 +89,7 @@ public class ApiController {
                 List<ChatEntity> messagesList = chatMemberRepository.findByUserId(id).stream().map(ChatMember::getChat).toList();
                 JsonObject answer = new JsonObject();
                 answer.addProperty("code", 0);
-                answer.addProperty("msg", "Messages loaded");
+                answer.addProperty("msg", "Chats loaded");
 
                 JsonArray chats = new JsonArray();
 
@@ -177,9 +176,11 @@ public class ApiController {
             @RequestHeader("User-Id") Long userId,
             @RequestHeader("User-Password") String password,
             @RequestBody CreateChatRequest request) {
-
-        System.err.println("Password: " + password);
         try {
+            if (userId.equals(request.getOtherUserId())) {
+                return ResponseEntity.badRequest().build();
+            }
+
             log.info("Creating chat for user: {} with: {}", userId, request.getOtherUserId());
 
             // 1. Аутентификация
@@ -187,12 +188,12 @@ public class ApiController {
             if (currentUser == null) {
                 return ResponseEntity.badRequest().build();
             }
-
             // 2. Проверяем существование второго пользователя
             Optional<UserEntity> otherUserOpt = usersRepository.findById(request.getOtherUserId());
             if (otherUserOpt.isEmpty()) {
                 return ResponseEntity.notFound().build();
             }
+
             UserEntity otherUser = otherUserOpt.get();
 
             ChatEntity newChat = createPrivateChat(currentUser, otherUser, request);
@@ -222,6 +223,7 @@ public class ApiController {
             chatName = user1.getName() + " и " + user2.getName();
         }
 
+        //chat.setId(Long.parseLong(String.valueOf(user1.getId()) + user2.getId()));
         chat.setName(chatName);
         chat.setGroup(isGroup);
         chat.setDescription(request.getDescription());
@@ -246,12 +248,5 @@ public class ApiController {
         member2.setRole(ChatMember.Role.MEMBER);
         member2.setJoinedAt(java.time.LocalDateTime.now());
         chatMemberRepository.save(member2);
-
-        // Добавляем в коллекцию чата (если используется)
-        if (chat.getMembers() == null) {
-            chat.setMembers(new ArrayList<>());
-        }
-        chat.getMembers().add(member1);
-        chat.getMembers().add(member2);
     }
 }
