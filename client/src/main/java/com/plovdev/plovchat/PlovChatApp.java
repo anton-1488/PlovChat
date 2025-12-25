@@ -7,6 +7,7 @@ import com.plovdev.plovchat.utils.RestManager;
 import com.plovdev.plovchat.utils.Utils;
 import com.plovdev.plovchat.utils.WSManager;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.stage.Stage;
 
 public class PlovChatApp extends Application {
@@ -28,6 +29,13 @@ public class PlovChatApp extends Application {
                 baseScene = new LoginScene(stage);
             }
         }
+
+        Platform.setImplicitExit(false);
+
+        stage.setOnCloseRequest(e -> {
+            e.consume();
+            stage.hide();
+        });
 
         stage.setScene(baseScene);
         stage.setTitle("PlovChat");

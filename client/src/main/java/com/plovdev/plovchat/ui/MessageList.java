@@ -6,10 +6,13 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.VBox;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
 public class MessageList extends ScrollPane {
+    private static final Logger log = LoggerFactory.getLogger(MessageList.class);
     private final VBox box = new VBox(20);
 
     public MessageList() {
@@ -27,9 +30,8 @@ public class MessageList extends ScrollPane {
         setPannable(true);
 
         box.heightProperty().addListener((p1,p2,p3) -> {
-            if (Math.abs(getVvalue() - getVmax()) > 0.01) {
-                Platform.runLater(() -> setVvalue(getVmax()));
-            }
+            log.info("VValue: {}, maxVValue: {}, Math.abs: {}", getVvalue(), getVmax(), Math.abs(getVvalue() - getVmax()));
+            Platform.runLater(() -> setVvalue(getVmax()));
         });
     }
 

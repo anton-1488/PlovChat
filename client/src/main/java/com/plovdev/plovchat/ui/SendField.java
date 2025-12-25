@@ -5,6 +5,7 @@ import com.plovdev.plovchat.models.Message;
 import com.plovdev.plovchat.models.User;
 import com.plovdev.plovchat.utils.Utils;
 import com.plovdev.plovchat.utils.WSManager;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.HBox;
@@ -34,6 +35,8 @@ public class SendField extends HBox {
             messageList.addMessage(getMessage(curentChat, text));
             manager.sendChatMessage(curentChat.getId(), text);
         });
+
+        HBox.setMargin(textField, new Insets(5));
     }
 
     private Message getMessage(Chat chat, String text) {

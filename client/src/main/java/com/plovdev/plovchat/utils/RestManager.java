@@ -3,6 +3,7 @@ package com.plovdev.plovchat.utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.plovdev.plovchat.models.Chat;
+import com.plovdev.plovchat.models.File;
 import com.plovdev.plovchat.models.Message;
 import com.plovdev.plovchat.models.User;
 import com.plovdev.plovchat.models.utils.JsonParser;
@@ -16,6 +17,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -178,7 +180,6 @@ public class RestManager {
 
     public List<Chat> getChats(String id, String password) {
         try {
-
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + "getUserChats"))
                     .GET()
@@ -202,6 +203,35 @@ public class RestManager {
             log.error("Failed load user chats", e);
         }
         return new ArrayList<>();
+    }
+
+    public File uploadFile(Path file) {
+        try {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "upload"))
+                    .POST(HttpRequest.BodyPublishers.ofFile(file))
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .header("User-Agent", "PlovChat/1.0")
+                    .header("User-Password", Utils.getFromPrefs("user-password", ""))
+                    .header("User-Id", Utils.getFromPrefs("user-id", ""))
+                    .timeout(Duration.ofSeconds(20))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                JSONObject object = new JSONObject(response.body());
+                int code = object.getInt("code");
+                if (code == 0) {
+                    log.info("File uploaded");
+                    return JsonParser.jsonToFile(object.getJSONObject("data").toString());
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed load user chats", e);
+        }
+        return new File();
     }
 
 

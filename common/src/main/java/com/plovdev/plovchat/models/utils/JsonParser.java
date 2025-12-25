@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.google.gson.JsonArray;
 import com.plovdev.plovchat.models.Chat;
+import com.plovdev.plovchat.models.File;
 import com.plovdev.plovchat.models.Message;
 import com.plovdev.plovchat.models.User;
 import org.slf4j.Logger;
@@ -86,6 +87,22 @@ public class JsonParser {
             log.error("Ошибка парсинга сообщения: {}", e.getMessage());
         }
         return new Message();
+    }
+
+    public static File jsonToFile(String json) {
+        try {
+            JsonNode root = mapper.readTree(json);
+
+            // Парсим массив
+            return mapper.readValue(
+                    root.toString(),
+                    new TypeReference<>() {}
+            );
+
+        } catch (Exception e) {
+            log.error("Ошибка парсинга файла: {}", e.getMessage());
+        }
+        return new File();
     }
 
     public static Chat jsonToChat(String json) {

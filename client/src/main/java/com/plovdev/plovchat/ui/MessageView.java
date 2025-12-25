@@ -9,6 +9,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.input.MouseButton;
 import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 
 import java.time.format.DateTimeFormatter;
 
@@ -18,7 +19,7 @@ public class MessageView extends StackPane {
     private final BorderPane render = new BorderPane();
 
     private final Label fromName;
-    private final Label text;
+    private final Text text;
     private final Label time;
 
     public MessageView(Message message) {
@@ -44,15 +45,14 @@ public class MessageView extends StackPane {
             setAlignment(render, Pos.CENTER);
         }
 
-        text = new Label(message.getContent());
+        text = new Text(message.getContent());
         time = new Label(Utils.fromatDate(message.getTimesamp()));
 
         fromName.getStyleClass().add("system-message-label");
         time.getStyleClass().add("system-message-label");
         text.getStyleClass().add("message-text");
 
-        text.setWrapText(true);
-        text.setMaxWidth(300);
+        text.wrappingWidthProperty().bind(widthProperty().divide(2.1));
 
         render.setCenter(text);
         render.setTop(new HBox(fromName, hReg()));
@@ -64,7 +64,7 @@ public class MessageView extends StackPane {
             }
         });
 
-        render.maxWidthProperty().bind(widthProperty().divide(3));
+        render.maxWidthProperty().bind(widthProperty().divide(2.1));
         getChildren().add(render);
     }
 

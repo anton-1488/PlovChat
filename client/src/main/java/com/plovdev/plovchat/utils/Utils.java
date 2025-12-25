@@ -1,6 +1,7 @@
 package com.plovdev.plovchat.utils;
 
 import com.plovdev.plovchat.PlovChatApp;
+import com.plovdev.plovchat.ui.TrayNotification;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.Region;
@@ -18,6 +19,7 @@ import java.util.prefs.Preferences;
 public class Utils {
     private static final Preferences prefs = Preferences.userNodeForPackage(PlovChatApp.class);
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
+    private static final TrayNotification notification = new TrayNotification();
 
     public static boolean validatePassword(String text) {
         boolean space = text.contains(" ");
@@ -59,5 +61,9 @@ public class Utils {
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         StringSelection selection = new StringSelection(text);
         clipboard.setContents(selection, null);
+    }
+
+    public static void notification(String title, String text) {
+        notification.showInfoNotification(title, text);
     }
 }

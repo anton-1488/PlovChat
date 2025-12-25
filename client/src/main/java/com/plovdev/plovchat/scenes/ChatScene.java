@@ -135,6 +135,7 @@ public class ChatScene extends BaseScene {
         manager.setListener(new MessageListener() {
             @Override
             public void onMessageReceived(Message message) {
+                Utils.notification("Сообщение от " + message.getFrom().getName(), message.getContent());
                 if (messageList != null) {
                     Platform.runLater(() -> messageList.addMessage(message));
                 }
