@@ -25,7 +25,7 @@ import java.util.Map;
 public class RestManager {
     private static final Logger log = LoggerFactory.getLogger(RestManager.class);
     private static RestManager INSTANCE;
-    private static final String BASE_URL = "http://localhost:8080/api/"; //http://217.26.27.252:8080/api/
+    private static final String BASE_URL = "http://217.26.27.252:8080/api/"; //http://217.26.27.252:8080/api/
     private final HttpClient client;
 
     private final Gson gson = new Gson();

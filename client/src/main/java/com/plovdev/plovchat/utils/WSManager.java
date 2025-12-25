@@ -27,7 +27,7 @@ public class WSManager extends WebSocketClient {
     private Runnable onReady = () -> {};
 
     private WSManager() {
-        super(URI.create("ws://localhost:8081/chat"));
+        super(URI.create("ws://217.26.27.252:8081/chat"));
         setConnectionLostTimeout(50);
 
         connect();
