@@ -10,8 +10,10 @@ import com.plovdev.plovchat.utils.Utils;
 import com.plovdev.plovchat.utils.WSManager;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Hyperlink;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextInputDialog;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
@@ -55,7 +57,7 @@ public class ChatScene extends BaseScene {
         manager.setOnReady(() -> manager.setOnline(true));
 
         list.getSelectionModel().selectedItemProperty().addListener((p1, p2, p3) -> {
-            StackPane base = new StackPane();
+            AnchorPane base = new AnchorPane();
 
             Chat chat = ((ChatCardView) p3).getChat();
             MessageList messageList = new MessageList();
@@ -65,7 +67,15 @@ public class ChatScene extends BaseScene {
 
             SendField sendField = new SendField(chat, messageList);
 
-            StackPane.setAlignment(sendField, Pos.BOTTOM_RIGHT);
+            AnchorPane.setTopAnchor(messageList, 0.0);
+            AnchorPane.setBottomAnchor(messageList, 50.0); // Оставляем место для SendField
+            AnchorPane.setLeftAnchor(messageList, 0.0);
+            AnchorPane.setRightAnchor(messageList, 0.0);
+
+            AnchorPane.setBottomAnchor(sendField, 0.0);
+            AnchorPane.setLeftAnchor(sendField, 0.0);
+            AnchorPane.setRightAnchor(sendField, 0.0);
+
             base.getChildren().addAll(messageList, sendField);
             mainPane.setCenter(base);
         });
