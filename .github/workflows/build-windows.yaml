@@ -31,11 +31,11 @@ jobs:
           ls client\target
           
           # Запускаем jpackage
-          jpackage --type exe --name "PlovChat" --input client\target --main-jar "client-1.0-SNAPSHOT.jar" --main-class "com.plovdev.plovchat.Launcher" --app-version "0.1.0" --vendor "PlovDev" --copyright "Copyright © 2025" --description "Simple chat" --win-shortcut --win-menu --dest "dist"
+          jpackage --type exe --name "PlovChat" --input client\target --main-jar "client-1.0-SNAPSHOT.jar" --app-version "0.1.0" --vendor "PlovDev" --copyright "Copyright © 2025" --description "Simple chat" --win-shortcut --win-menu --dest "dist"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: windows-installer
+          name: plovchat-installer
           path: dist/*.exe
           retention-days: 7

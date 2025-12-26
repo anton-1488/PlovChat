@@ -29,6 +29,8 @@ public class PlovChatApp extends Application {
             }
         }
 
+        stage.setOnCloseRequest(w -> System.exit(0));
+
         stage.setScene(baseScene);
         stage.setTitle("PlovChat");
         stage.show();
