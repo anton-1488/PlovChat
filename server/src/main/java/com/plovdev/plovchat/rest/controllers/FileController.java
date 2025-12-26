@@ -14,6 +14,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -22,18 +25,18 @@ import java.nio.file.Path;
 @RequestMapping("/api")
 public class FileController {
     private static final Logger log = LoggerFactory.getLogger(FileController.class);
-    private static final Path UPLAOD_DIR = Path.of("/uploaded");
+    private static final String UPLOAD_DIR = "/uploaded/";
     private final UsersRepository usersRepository;
     private final MessageRepos messageRepos;
     private final ChatMemberRepository chatMemberRepository;
     private final ChatRepository chatRepository;
     private final Gson gson;
 
-    @PostMapping("upload")
+    @PostMapping("/upload")
     public ResponseEntity<String> upload(
             @RequestHeader("User-Id") Long userId,
             @RequestHeader("User-Password") String password,
-            @RequestHeader("File-Nmae") String fileNmae,
+            @RequestHeader("File-Name") String fileName,
             @RequestBody byte[] file) {
 
         try {
@@ -43,7 +46,7 @@ public class FileController {
             }
             String fileId = CommonUtils.generateId();
 
-            Files.write(UPLAOD_DIR, file);
+            Files.write(Path.of(UPLOAD_DIR + fileId), file);
 
             JsonObject uploaded = new JsonObject();
             uploaded.addProperty("code", 0);
@@ -51,7 +54,7 @@ public class FileController {
 
             JsonObject data = new JsonObject();
             data.addProperty("id", fileId);
-            data.addProperty("name", fileNmae);
+            data.addProperty("name", fileName);
             uploaded.add("data", data);
 
             return ResponseEntity.ok(gson.toJson(uploaded));
@@ -60,5 +63,27 @@ public class FileController {
             log.error("Error upload file: ", e);
             return ResponseEntity.internalServerError().body(JsonPresets.internalServerError());
         }
+    }
+
+    @GetMapping("/download")
+    public ResponseEntity<InputStream> download(
+            @RequestHeader("User-Id") Long userId,
+            @RequestHeader("User-Password") String password,
+            @RequestHeader("File-Id") String fileId) {
+
+        UserEntity currentUser = usersRepository.findByIdAndPassword(userId, password);
+        if (currentUser == null) {
+            return ResponseEntity.badRequest().build();
+        }
+        try {
+            return ResponseEntity.ok(new FileInputStream(UPLOAD_DIR + fileId));
+        } catch (FileNotFoundException e) {
+            log.error("File not found");
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    private void validate(String id, String passw) {
+
     }
 }

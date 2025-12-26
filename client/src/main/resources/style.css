@@ -29,7 +29,6 @@
     -fx-text-fill: lightgray;
     -fx-prompt-text-fill: orange;
 }
-
 .user-card {
     -fx-background-color: black;
 }
@@ -42,4 +41,35 @@
     -fx-text-fill: orange;
     -fx-font-family: "Arial";
     -fx-border-width: 0;
+}
+
+
+.scroll-pane {
+    -fx-background-color: transparent;
+}
+
+/* Скрыть вертикальную полосу прокрутки */
+.scroll-pane .scroll-bar:vertical {
+    -fx-opacity: 0;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+/* Скрыть горизонтальную полосу прокрутки */
+.scroll-pane .scroll-bar:horizontal {
+    -fx-opacity: 0;
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+}
+
+/* Скрыть ползунки (thumb) */
+.scroll-pane .scroll-bar .thumb {
+    -fx-opacity: 0;
+}
+
+/* Скрыть стрелки */
+.scroll-pane .scroll-bar .increment-button,
+.scroll-pane .scroll-bar .decrement-button {
+    -fx-opacity: 0;
+    -fx-padding: 0;
 }

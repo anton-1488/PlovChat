@@ -65,6 +65,8 @@ public class ChatScene extends BaseScene {
             messageList.prefHeightProperty().bind(heightProperty());
             initListener(messageList);
 
+            mainPane.setTop(new HBox(userCard));
+
             SendField sendField = new SendField(chat, messageList);
 
             AnchorPane.setTopAnchor(messageList, 0.0);
@@ -87,8 +89,6 @@ public class ChatScene extends BaseScene {
 
         Region space = new Region();
         HBox.setHgrow(space, Priority.ALWAYS);
-
-        mainPane.setTop(new HBox(userCard, space));
     }
 
     private void loadChats(ChatsList list) {

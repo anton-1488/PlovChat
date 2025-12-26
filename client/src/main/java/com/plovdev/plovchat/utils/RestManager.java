@@ -11,6 +11,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -27,7 +29,7 @@ import java.util.Map;
 public class RestManager {
     private static final Logger log = LoggerFactory.getLogger(RestManager.class);
     private static RestManager INSTANCE;
-    private static final String BASE_URL = "http://217.26.27.252:8080/api/"; //http://217.26.27.252:8080/api/
+    private static final String BASE_URL = "http://" + Utils.getServer() + ":8080/api/"; //http://217.26.27.252:8080/api/
     private final HttpClient client;
 
     private final Gson gson = new Gson();
@@ -215,11 +217,11 @@ public class RestManager {
                     .header("User-Agent", "PlovChat/1.0")
                     .header("User-Password", Utils.getFromPrefs("user-password", ""))
                     .header("User-Id", Utils.getFromPrefs("user-id", ""))
+                    .header("File-Name", file.toString())
                     .timeout(Duration.ofSeconds(20))
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
             if (response.statusCode() == 200) {
                 JSONObject object = new JSONObject(response.body());
                 int code = object.getInt("code");
@@ -232,6 +234,36 @@ public class RestManager {
             log.error("Failed load user chats", e);
         }
         return new File();
+    }
+
+    public void download(String fileId, String fileName) {
+        try (FileOutputStream file = new FileOutputStream("/downloads/" + fileName)) {
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(BASE_URL + "download"))
+                    .GET()
+                    .header("Content-Type", "application/json")
+                    .header("Accept", "application/json")
+                    .header("User-Agent", "PlovChat/1.0")
+                    .header("User-Password", Utils.getFromPrefs("user-password", ""))
+                    .header("User-Id", Utils.getFromPrefs("user-id", ""))
+                    .header("File-Id", fileId)
+                    .timeout(Duration.ofSeconds(20))
+                    .build();
+
+            HttpResponse<InputStream> response = client.send(request, HttpResponse.BodyHandlers.ofInputStream());
+            try (InputStream in = response.body()) {
+                long totalRead = 0;
+                int chunk;
+                byte[] bytes = new byte[8192];
+
+                while ((chunk = in.read(bytes)) != -1) {
+                    file.write(bytes, 0, chunk);
+                    totalRead += chunk;
+                }
+            }
+        } catch (Exception e) {
+            log.error("Failed load user chats", e);
+        }
     }
 
 

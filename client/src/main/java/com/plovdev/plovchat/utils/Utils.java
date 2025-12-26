@@ -20,6 +20,8 @@ public class Utils {
     private static final Preferences prefs = Preferences.userNodeForPackage(PlovChatApp.class);
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
     private static final TrayNotification notification = new TrayNotification();
+    private static final String local = "localhost";
+    private static final String global = "217.26.27.252";
 
     public static boolean validatePassword(String text) {
         boolean space = text.contains(" ");
@@ -65,5 +67,9 @@ public class Utils {
 
     public static void notification(String title, String text) {
         notification.showInfoNotification(title, text);
+    }
+
+    public static String getServer() {
+        return local;
     }
 }
