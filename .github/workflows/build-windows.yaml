@@ -15,9 +15,8 @@ jobs:
     steps:
       - name: Create Windows executable with jpackage
         run: |
-          mkdir -p input-lib
+          ls
           
-          # Копируем JAR файл и зависимости
           copy "client\target" input-lib\
           
           ls
