@@ -13,13 +13,25 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'microsoft'
+          java-version: '21'
+          cache: 'maven'
+
+      - name: Build with Maven
+        run: mvn clean package -DskipTests
+
       - name: Create Windows executable with jpackage
         run: |
-          ls
+          mkdir -p input-lib
           
-          copy "client\target" input-lib\
-          
-          ls
+          # Копируем JAR файл и зависимости
+          copy "client\target\" input-lib\
           
           # Запускаем jpackage
           jpackage --type exe --name "PlovChat" --input input-lib --main-jar "client-1.0-SNAPSHOT.jar" --app-version "0.1.0" --vendor "PlovDev" --copyright "Copyright © 2025" --description "Simple chat" --win-shortcut --win-menu
