@@ -31,7 +31,9 @@ jobs:
           mkdir -p input-lib
           
           # Копируем JAR файл и зависимости
-          copy "client\target\*.jar" input-lib\
+          copy "client\target\client.jar" input-lib\
+          
+          ls
           
           # Запускаем jpackage
           jpackage --type exe --name "PlovChat" --input input-lib --main-jar "client.jar" --app-version "0.1.0" --vendor "PlovDev" --copyright "Copyright © 2025" --description "Simple chat" --win-shortcut --win-menu
