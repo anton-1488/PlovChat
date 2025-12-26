@@ -30,11 +30,10 @@ jobs:
         run: |
           mkdir -p input-lib
           
-          # Копируем JAR файл и зависимости
-          copy "client\target\" input-lib\
+          ls client\target
           
           # Запускаем jpackage
-          jpackage --type exe --name "PlovChat" --input input-lib --main-jar "client-1.0-SNAPSHOT.jar" --app-version "0.1.0" --vendor "PlovDev" --copyright "Copyright © 2025" --description "Simple chat" --win-shortcut --win-menu
+          jpackage --type exe --name "PlovChat" --input client\target --main-jar "client-1.0-SNAPSHOT.jar" --app-version "0.1.0" --vendor "PlovDev" --copyright "Copyright © 2025" --description "Simple chat" --win-shortcut --win-menu
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
