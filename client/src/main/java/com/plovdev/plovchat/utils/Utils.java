@@ -70,6 +70,6 @@ public class Utils {
     }
 
     public static String getServer() {
-        return local;
+        return global;
     }
 }
