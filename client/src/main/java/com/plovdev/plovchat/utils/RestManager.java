@@ -231,13 +231,13 @@ public class RestManager {
                 }
             }
         } catch (Exception e) {
-            log.error("Failed load user chats", e);
+            log.error("Failed to upload file", e);
         }
         return new File();
     }
 
     public void download(String fileId, String fileName) {
-        try (FileOutputStream file = new FileOutputStream("/downloads/" + fileName)) {
+        try (FileOutputStream file = new FileOutputStream("downloads/" + fileName)) {
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create(BASE_URL + "download"))
                     .GET()
@@ -260,6 +260,7 @@ public class RestManager {
                     file.write(bytes, 0, chunk);
                     totalRead += chunk;
                 }
+                log.info("File downloaded");
             }
         } catch (Exception e) {
             log.error("Failed load user chats", e);

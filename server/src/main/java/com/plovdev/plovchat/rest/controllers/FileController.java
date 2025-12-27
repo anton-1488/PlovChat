@@ -15,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -25,7 +23,7 @@ import java.nio.file.Path;
 @RequestMapping("/api")
 public class FileController {
     private static final Logger log = LoggerFactory.getLogger(FileController.class);
-    private static final String UPLOAD_DIR = "/uploaded/";
+    private static final String UPLOAD_DIR = "uploaded/";
     private final UsersRepository usersRepository;
     private final MessageRepos messageRepos;
     private final ChatMemberRepository chatMemberRepository;
@@ -42,9 +40,11 @@ public class FileController {
         try {
             UserEntity currentUser = usersRepository.findByIdAndPassword(userId, password);
             if (currentUser == null) {
+                log.info("Can't find user {}", userId);
                 return ResponseEntity.badRequest().build();
             }
             String fileId = CommonUtils.generateId();
+            log.info("User({}) uploading file {}. File id: {}", userId, fileName, fileId);
 
             Files.write(Path.of(UPLOAD_DIR + fileId), file);
 
@@ -54,7 +54,9 @@ public class FileController {
 
             JsonObject data = new JsonObject();
             data.addProperty("id", fileId);
+            fileName = fileName.substring(fileName.lastIndexOf("/") + 1);
             data.addProperty("name", fileName);
+            data.addProperty("url", "http://217.26.27.252/uploaded/" + fileId);
             uploaded.add("data", data);
 
             return ResponseEntity.ok(gson.toJson(uploaded));
@@ -66,18 +68,22 @@ public class FileController {
     }
 
     @GetMapping("/download")
-    public ResponseEntity<InputStream> download(
+    public ResponseEntity<byte[]> download(
             @RequestHeader("User-Id") Long userId,
             @RequestHeader("User-Password") String password,
             @RequestHeader("File-Id") String fileId) {
 
         UserEntity currentUser = usersRepository.findByIdAndPassword(userId, password);
         if (currentUser == null) {
+            log.warn("User not found {}", userId);
             return ResponseEntity.badRequest().build();
         }
         try {
-            return ResponseEntity.ok(new FileInputStream(UPLOAD_DIR + fileId));
-        } catch (FileNotFoundException e) {
+            log.info("Downloading file {}", fileId);
+            try (FileInputStream fis = new FileInputStream(UPLOAD_DIR + fileId)) {
+                return ResponseEntity.ok(fis.readAllBytes());
+            }
+        } catch (Exception e) {
             log.error("File not found");
             return ResponseEntity.notFound().build();
         }

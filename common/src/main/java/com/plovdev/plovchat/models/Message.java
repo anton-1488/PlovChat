@@ -31,16 +31,20 @@ public class Message implements Serializable {
     @JsonProperty("from")
     private User from;
 
+    @JsonProperty("file-info")
+    private File info;
+
     public Message() {
     }
 
-    public Message(String id, String chatId, String content, MessageType type, Long timesamp, User from) {
+    public Message(String id, String chatId, String content, MessageType type, Long timesamp, User from, File info) {
         this.id = id;
         this.chatId = chatId;
         this.content = content;
         this.type = type;
         this.timesamp = timesamp;
         this.from = from;
+        this.info = info;
     }
 
     public String getId() {
@@ -91,9 +95,16 @@ public class Message implements Serializable {
         this.from = from;
     }
 
+    public File getInfo() {
+        return info;
+    }
+
+    public void setInfo(File info) {
+        this.info = info;
+    }
 
     public enum MessageType {
-        TEXT
+        TEXT, FILE, IMAGE
     }
 
     @Override

@@ -4,6 +4,8 @@ import com.plovdev.plovchat.entities.ChatEntity;
 import com.plovdev.plovchat.entities.ChatMember;
 import com.plovdev.plovchat.entities.MessageEntity;
 import com.plovdev.plovchat.entities.UserEntity;
+import com.plovdev.plovchat.models.File;
+import com.plovdev.plovchat.models.utils.JsonParser;
 import com.plovdev.plovchat.repos.ChatMemberRepository;
 import com.plovdev.plovchat.repos.ChatRepository;
 import com.plovdev.plovchat.repos.MessageRepos;
@@ -149,6 +151,7 @@ public class ChatWebSocketServer extends WebSocketServer {
 
         String text = args.getString("text");
         String chatId = args.getString("chatId");
+        String messageType = args.getString("type");
 
         Optional<ChatEntity> chatEntityOptional = chatRepository.findById(Long.parseLong(chatId));
         if (chatEntityOptional.isEmpty()) {
@@ -174,7 +177,8 @@ public class ChatWebSocketServer extends WebSocketServer {
 
             WebSocket recipientSocket = userConnections.get(recipientId);
             if (recipientSocket != null && recipientSocket.isOpen()) {
-                recipientSocket.send(getMessageToSend(text, sender, member.getChat().getId()).toString());
+                JSONObject msg = getMessageToSend(text, sender, member.getChat().getId(), messageType, JsonParser.jsonToFile(args.getJSONObject("file-info").toString()));
+                recipientSocket.send(msg.toString());
                 log.info("Сообщение от {} к {}: {}", senderId, recipientId, text);
             } else {
                 log.info("Получатель {} офлайн. Сообщение сохранено.", recipientId);
@@ -182,8 +186,9 @@ public class ChatWebSocketServer extends WebSocketServer {
 
             MessageEntity entity = new MessageEntity();
             entity.setChat(member.getChat());
-            entity.setType(MessageEntity.MessageType.TEXT);
+            entity.setType(MessageEntity.MessageType.valueOf(messageType));
             entity.setSender(sender);
+            entity.setFileInfo(JsonParser.jsonToFile(args.getJSONObject("file-info").toString()));
             entity.setCreatedAt(LocalDateTime.now());
             entity.setContent(text);
 
@@ -191,7 +196,7 @@ public class ChatWebSocketServer extends WebSocketServer {
         }
     }
 
-    private JSONObject getMessageToSend(String text, UserEntity sender, Long chatId) {
+    private JSONObject getMessageToSend(String text, UserEntity sender, Long chatId, String type, File file) {
 
         JSONObject messageToSend = new JSONObject();
         messageToSend.put("op", "message");
@@ -200,7 +205,7 @@ public class ChatWebSocketServer extends WebSocketServer {
         messageArgs.put("id", System.currentTimeMillis());
         messageArgs.put("content", text);
         messageArgs.put("timestamp", System.currentTimeMillis());
-        messageArgs.put("type", "TEXT");
+        messageArgs.put("type", type);
         messageArgs.put("chatId", chatId);
 
         // Добавляем данные отправителя
@@ -210,6 +215,13 @@ public class ChatWebSocketServer extends WebSocketServer {
         from.put("bio", sender.getBio());
         from.put("picture-url", sender.getAvatar());
         messageArgs.put("from", from);
+
+        JSONObject fileInfo = new JSONObject();
+        fileInfo.put("id", file.getId());
+        fileInfo.put("name", file.getName());
+        from.put("url", file.getUrl());
+
+        messageArgs.put("file-info", fileInfo);
 
         messageToSend.put("args", messageArgs);
 

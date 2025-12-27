@@ -9,6 +9,7 @@ import com.plovdev.plovchat.entities.ChatEntity;
 import com.plovdev.plovchat.entities.ChatMember;
 import com.plovdev.plovchat.entities.MessageEntity;
 import com.plovdev.plovchat.entities.UserEntity;
+import com.plovdev.plovchat.models.File;
 import com.plovdev.plovchat.repos.ChatMemberRepository;
 import com.plovdev.plovchat.repos.ChatRepository;
 import com.plovdev.plovchat.repos.MessageRepos;
@@ -153,6 +154,14 @@ public class ApiController {
             senderNode.addProperty("userName", message.getSender().getName());
             senderNode.addProperty("pictureUrl", message.getSender().getAvatar() != null ? message.getSender().getAvatar() : "");
             messageNode.add("from", senderNode);
+        }
+        File file = message.getFileInfo();
+        if (file != null) {
+            JsonObject fileInfo = new JsonObject();
+            fileInfo.addProperty("id", file.getId());
+            fileInfo.addProperty("name", file.getName());
+            fileInfo.addProperty("url", file.getUrl());
+            messageNode.add("file-info", fileInfo);
         }
         return messageNode;
     }

@@ -29,18 +29,20 @@ public class MessageList extends ScrollPane {
         setVbarPolicy(ScrollBarPolicy.AS_NEEDED);
         setPannable(true);
 
-        box.heightProperty().addListener((p1,p2,p3) -> {
-            log.info("VValue: {}, maxVValue: {}, Math.abs: {}", getVvalue(), getVmax(), Math.abs(getVvalue() - getVmax()));
-            Platform.runLater(() -> setVvalue(getVmax()));
-        });
+        box.heightProperty().addListener((p1,p2,p3) -> Platform.runLater(() -> setVvalue(getVmax())));
     }
 
-    public void addAllMessages(List<MessageView> views) {
-        box.getChildren().addAll(views);
+    public void addAllMessages(List<Message> messages) {
+        messages.forEach(this::addMessage);
         setVvalue(getVmax());
     }
 
     public void addMessage(Message message) {
-        box.getChildren().add(new MessageView(message));
+        MessageRender render = switch (message.getType()) {
+            case IMAGE -> new ImageMessageRender(message);
+            case FILE -> new FileMessageRender(message);
+            default -> new TextMessageRender(message);
+        };
+        box.getChildren().add(render.render());
     }
 }

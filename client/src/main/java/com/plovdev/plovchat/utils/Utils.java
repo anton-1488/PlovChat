@@ -17,7 +17,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.prefs.Preferences;
 
 public class Utils {
-    private static final Preferences prefs = Preferences.userNodeForPackage(PlovChatApp.class);
+    private static final Preferences prefs = Preferences.userNodeForPackage(PlovChatApp.class).node("23");
     private static final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm");
     private static final TrayNotification notification = new TrayNotification();
     private static final String local = "localhost";
@@ -70,6 +70,6 @@ public class Utils {
     }
 
     public static String getServer() {
-        return global;
+        return local;
     }
 }

@@ -1,5 +1,6 @@
 package com.plovdev.plovchat.entities;
 
+import com.plovdev.plovchat.models.File;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -39,6 +40,9 @@ public class MessageEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "sender_id", nullable = false, referencedColumnName = "id")
     private UserEntity sender;
+
+    @Column(name = "file_info")
+    private File fileInfo;
 
     @PrePersist
     protected void onCreate() {

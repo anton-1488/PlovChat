@@ -3,7 +3,10 @@ package com.plovdev.plovchat.scenes;
 import com.plovdev.plovchat.models.Chat;
 import com.plovdev.plovchat.models.Message;
 import com.plovdev.plovchat.models.User;
-import com.plovdev.plovchat.ui.*;
+import com.plovdev.plovchat.ui.ChatCardView;
+import com.plovdev.plovchat.ui.ChatsList;
+import com.plovdev.plovchat.ui.MessageList;
+import com.plovdev.plovchat.ui.SendField;
 import com.plovdev.plovchat.utils.MessageListener;
 import com.plovdev.plovchat.utils.RestManager;
 import com.plovdev.plovchat.utils.Utils;
@@ -86,9 +89,9 @@ public class ChatScene extends BaseScene {
 
 
         mainPane.getStyleClass().add("chat-scene");
-
         Region space = new Region();
         HBox.setHgrow(space, Priority.ALWAYS);
+        mainPane.setTop(new HBox(userCard, space));
     }
 
     private void loadChats(ChatsList list) {
@@ -100,6 +103,13 @@ public class ChatScene extends BaseScene {
             RestManager.getInstance().getChats(id, password).forEach(chat -> list.addChat(new ChatCardView(chat)));
         }
 
+        Button createChat = getCreateChatButton(list);
+
+        HBox createChatBox = new HBox(0, createChat);
+        list.getItems().addFirst(createChatBox);
+    }
+
+    private Button getCreateChatButton(ChatsList list) {
         Button createChat = new Button("Создать чат");
         createChat.setOnAction(a -> {
             TextInputDialog dialog = new TextInputDialog("");
@@ -114,21 +124,16 @@ public class ChatScene extends BaseScene {
                 Platform.runLater(() -> list.addChat(new ChatCardView(created)));
             });
         });
-
-        HBox createChatBox = new HBox(0, createChat);
-        list.getItems().addFirst(createChatBox);
+        return createChat;
     }
 
-    private List<MessageView> loadViews(Chat chat) {
+    private List<Message> loadViews(Chat chat) {
         String id = Utils.getFromPrefs("user-id", null);
         String password = Utils.getFromPrefs("user-password", null);
-
-        List<MessageView> views = new ArrayList<>();
-
         if (id != null && password != null) {
-            RestManager.getInstance().loadMessages(chat.getId(), id, password).forEach(message -> views.add(new MessageView(message)));
+            return RestManager.getInstance().loadMessages(chat.getId(), id, password);
         }
-        return views;
+        return new ArrayList<>();
     }
 
     private void initListener(MessageList messageList) {

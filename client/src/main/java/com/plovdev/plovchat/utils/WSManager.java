@@ -3,6 +3,7 @@ package com.plovdev.plovchat.utils;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.plovdev.plovchat.models.File;
 import com.plovdev.plovchat.models.Message;
 import com.plovdev.plovchat.models.User;
 import com.plovdev.plovchat.models.utils.JsonParser;
@@ -184,21 +185,30 @@ public class WSManager extends WebSocketClient {
 
 
     public void sendChatMessage(String chatId, String text) {
+        sendChatFile(chatId, text, new File(), Message.MessageType.TEXT);
+    }
+
+    public void sendChatFile(String chatId, String text, File file, Message.MessageType type) {
         JsonObject args = new JsonObject();
         args.addProperty("id", -1);
         args.addProperty("text", text);
         args.addProperty("time", System.currentTimeMillis());
+        args.addProperty("type", type.name());
         args.addProperty("chatId", chatId);
 
         // Добавь информацию об отправителе если нужно
         JsonObject from = new JsonObject();
-
         from.addProperty("id", Utils.getFromPrefs("user-id", ""));
         from.addProperty("name", Utils.getFromPrefs("user-name", ""));
         from.addProperty("bio", Utils.getFromPrefs("user-bio", ""));
         from.addProperty("picture-url", Utils.getFromPrefs("picture-url", ""));
-
         args.add("from", from);
+
+        JsonObject fileInfo = new JsonObject();
+        fileInfo.addProperty("id", file.getId());
+        fileInfo.addProperty("name", file.getName());
+        fileInfo.addProperty("url", file.getUrl());
+        args.add("file-info", fileInfo);
 
         JsonObject message = new JsonObject();
         message.addProperty("op", "message");
